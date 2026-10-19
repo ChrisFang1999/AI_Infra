@@ -1,0 +1,15 @@
+# 系统缓存
+.DS_Store
+.AppleDouble
+._*
+
+# Python 缓存与本地环境
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# 本地凭据
+.env
+.env.*
+!.env.example

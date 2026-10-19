@@ -1,0 +1,46 @@
+from PIL import Image,ImageDraw,ImageFont
+from pathlib import Path
+S=2;W,H=1600,1150
+im=Image.new('RGB',(W*S,H*S),'#f5f7fb');d=ImageDraw.Draw(im)
+font='/System/Library/Fonts/STHeiti Medium.ttc'
+def txt(x,y,t,size=24,c='#263a50'): d.text((x*S,y*S),t,font=ImageFont.truetype(font,size*S),fill=c)
+def box(b,c,r=12):d.rounded_rectangle(tuple(v*S for v in b),radius=r*S,fill=c)
+def line(points,c='#91a1b3',w=2):d.line([(x*S,y*S) for x,y in points],fill=c,width=w*S)
+txt(64,40,'GPU 利用率与 SM 活跃率：同一执行过程，不同统计视角',38,'#17304e')
+txt(64,100,'本图中的“SM 利用率”采用 SM Active / SM Activity 口径，不代表 SM Occupancy。',23,'#61758c')
+box((64,151,1046,705),'#ffffff');box((1070,151,1536,416),'#e8f1ff');box((1070,438,1536,705),'#eaf4ef')
+txt(90,176,'简化示例：4 个 SM，只有 SM 0 持续活跃',28)
+txt(90,221,'同一统计窗口分为 8 个等长时间段，仅用于解释概念',21,'#61758c')
+for j in range(8):txt(241+j*91,270,str(j+1),21,'#61758c')
+txt(949,269,'时间',19,'#61758c')
+for i in range(4):
+ y=316+i*66
+ txt(90,y+8,'SM '+str(i),24)
+ for j in range(8):
+  box((224+j*91,y,307+j*91,y+46),'#2d6bb1' if i==0 else '#e5eaf0',r=6)
+  if i==0:txt(245+j*91,y+9,'活跃',18,'#ffffff')
+ txt(966,y+11,'100%' if i==0 else '0%',20,'#2d6bb1' if i==0 else '#8a99aa')
+line([(90,588),(1018,588)],'#dce3ec',1)
+txt(90,610,'GPU 整体',23)
+for j in range(8):
+ box((224+j*91,604,307+j*91,650),'#dceaff',r=6);txt(246+j*91,615,'有',18,'#2d6bb1')
+txt(90,666,'蓝色：至少一个 warp 活跃；灰色：无活跃 warp',20,'#61758c')
+txt(1096,178,'GPU 利用率',27,'#2f5f94')
+txt(1096,224,'100%',53,'#205b9e')
+txt(1096,295,'8 / 8 个时间段都有 kernel 执行',21,'#42658a')
+txt(1096,341,'关注：时间上是否有 kernel',21,'#42658a')
+txt(1096,465,'SM 活跃率（全卡平均）',25,'#3e7160')
+txt(1096,514,'25%',53,'#2c7158')
+txt(1096,585,'(100% + 0% + 0% + 0%) / 4',21,'#456f60')
+txt(1096,635,'关注：各 SM 活跃时间的平均',21,'#456f60')
+box((64,733,1536,974),'#ffffff')
+txt(90,758,'两个统计口径',27)
+txt(90,805,'GPU 利用率',24,'#2f5f94')
+txt(330,805,'有一个或多个 kernel 执行的时间 / 窗口总时间',25)
+txt(90,851,'SM 活跃率',24,'#3e7160')
+txt(330,851,'先统计每个 SM 有活跃 warp 的时间占比，再对所有 SM 求平均',24)
+txt(90,911,'活跃不等于有效计算：等待内存或通信进度的 warp 也可能被计为活跃。',23,'#61758c')
+txt(64,1002,'GPU 100% 可以与 SM 活跃率较低同时出现。',30,'#17304e')
+txt(64,1052,'SM Occupancy 衡量驻留 warp 相对容量；指令 / Tensor 管线利用率又是另一类指标。',21,'#61758c')
+txt(64,1091,'示例不是 NCCL 的固定 SM 占用模式；实际指标窗口和采集方式可能不同，需核对字段口径。',20,'#61758c')
+p=Path('/private/tmp/GPU利用率与SM活跃率统计原理示意图.png');im.save(p);print(p)
